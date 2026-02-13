@@ -26,7 +26,13 @@ int main()
         // ... last one winning
         rx1.connection = transmitter.connect([&](const std::string &m) { rx1.onMessage(m + " foo"); });
 
-        // this will give a warning for not storing the result
+        // example for using a ConnectionGroup
+        ConnectionGroup group;
+        transmitter.connect(group, [&](const std::string &m) { std::cout << "context receiver 1: " << m << std::endl; });
+        transmitter.connect(group, [&](const std::string &m) { std::cout << "context receiver 2: " << m << std::endl; });
+        transmitter.connect(group, [&](const std::string &m) { std::cout << "context receiver 3: " << m << std::endl; });
+
+        // oops, this will give a warning for not storing the result
         transmitter.connect([&](const std::string &m) { rx1.onMessage(m); });
 
         Receiver rx2 { .id = 2 };
@@ -45,7 +51,7 @@ int main()
 
         transmitter.emit("Second"); // rx2 disconnect
 
-    } // rx1 + rx2 + rx3 go out of scope here, all connections destroyed
+    } // rx1 + rx2 + rx3 + group go out of scope here, all connections destroyed
 
     transmitter.emit("Third (no receiver)"); // No one receives this
 
